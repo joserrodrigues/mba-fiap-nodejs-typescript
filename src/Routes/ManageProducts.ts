@@ -9,7 +9,7 @@ const router = express.Router();
 router.get('/products', getProducts)
 router.get('/product/:prodID', getProduct);
 router.put('/product', [
-    body('prodID').trim().isLength({ min: 2 }),
+    body('_id').trim().isLength({ min: 2 }),
     body('title').trim().isLength({ min: 7 }),
     body('type').trim().isLength({ min: 7 }),
 ], editProduct);

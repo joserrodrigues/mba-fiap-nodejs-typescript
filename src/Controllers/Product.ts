@@ -1,20 +1,35 @@
 import { Request, Response, NextFunction } from "express";
-import { Product } from "../Models/Product";
+// import { Product } from "../Interfaces/Product";
 import {validationResult } from 'express-validator';
-
-let allProducts:Product[] = []
+import Product, {IProduct} from '../Models/Product';
 
 const getProducts = (request: Request, response: Response, next: NextFunction) => {         
-    response.status(200).json(allProducts)
+    Product.find()
+        .sort({ title: 'asc' })
+        .then((products: IProduct[]) => {
+            response.status(200).json({
+                products: products
+            });
+        })
+        .catch((err: any) => {
+            console.log(err);
+        });
 }
 
 
 const getProduct = (request: Request, response: Response, next: NextFunction) => {
     
     const prodID = request.params.prodID;
-    const product:Product = allProducts.filter(productArray => productArray.prodID === prodID)[0];
-    
-    response.status(200).json(product)
+
+    Product.findById(prodID)
+        .then((product: IProduct | null) => {
+            response.status(200).json({
+                product: product
+            });
+        })
+        .catch(err => {
+            console.log(err);
+        });            
 }
 
 const addProduct = (request: Request, response: Response, next: NextFunction) => {
@@ -23,11 +38,19 @@ const addProduct = (request: Request, response: Response, next: NextFunction) =>
         return response.status(400).json({ errors: errors.array() });
     }    
 
-    const product = request.body as Product;
-    
-    product.prodID = new Date().getTime().toString();
-    allProducts.push(product)    
-    response.status(200).json(product)
+    const bodyProduct = request.body as IProduct;
+    Product.create(bodyProduct).then((saveProduct: IProduct) => {        
+        response.status(200).json({
+            codeInfo: {
+                id: 1,
+                message: "Product create successfully",
+            },
+            product: saveProduct
+        });
+    })
+    .catch(err => {
+        console.log(err);
+    })    
 }
 
 const editProduct = (request: Request, response: Response, next: NextFunction) => {
@@ -36,13 +59,32 @@ const editProduct = (request: Request, response: Response, next: NextFunction) =
         return response.status(400).json({ errors: errors.array() });
     }    
 
-    const product = request.body as Product;
-    let newAllProducts = allProducts.filter(productArray => productArray.prodID !== product.prodID)
-    
-    allProducts = [...newAllProducts, product];
-    console.log(product);
-    
-    response.status(200).json(product)
+    let updatedProduct:IProduct;
+    const bodyProduct = request.body as IProduct;
+    Product.findById(bodyProduct._id)
+        .then((product: IProduct | null) => {
+            if (!product) {
+                console.log("Error not found")
+                return null;
+            } else {
+                product.title = bodyProduct.title;
+                product.type = bodyProduct.type;
+                updatedProduct = product;
+                return product.save();
+            }
+        })
+        .then((saveProduct: IProduct | null) => {        
+            response.status(200).json({
+                codeInfo: {
+                    id: 1,
+                    message: "Product updated successfully",
+                },
+                product: saveProduct
+            });
+        })        
+        .catch(err => {
+            console.log(err);
+        });    
 }
 
 export {
