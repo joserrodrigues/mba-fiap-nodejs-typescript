@@ -86,10 +86,25 @@ const editProduct = (request: Request, response: Response, next: NextFunction) =
             console.log(err);
         });    
 }
+const deleteProduct = (request: Request, response: Response, next: NextFunction) => {
+    const prodID = request.params.prodID;
+
+    Product.findByIdAndRemove(prodID)
+        .then((product: IProduct | null) => {
+            response.status(200).json({
+                    id: 1,
+                    message: "Product removed successfully",
+                });
+        })
+        .catch(err => {
+            console.log(err);
+        });    
+}
 
 export {
     getProducts,
     getProduct,
     addProduct,
-    editProduct
+    editProduct,
+    deleteProduct
 }

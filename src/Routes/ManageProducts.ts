@@ -1,5 +1,5 @@
 import express from "express"
-import {getProducts, getProduct, addProduct, editProduct} from '../Controllers/Product'
+import {getProducts, getProduct, addProduct, editProduct, deleteProduct} from '../Controllers/Product'
 import { body } from 'express-validator';
 import { Auth } from '../Middlewares/Auth'
 
@@ -18,6 +18,8 @@ router.post('/product', Auth,  [
     body('title').trim().isLength({ min: 7 }),
     body('type').trim().isLength({ min: 7 }),
 ], addProduct);
+router.delete('/product/:prodID', Auth, deleteProduct);
+
 
 
 export default router
